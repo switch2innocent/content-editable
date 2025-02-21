@@ -18,7 +18,7 @@
         </center>
         <form action="" method="POST">
             <div class="table-responsive">
-                <button type="button" id="addrow">Add Row</button>
+                <button type="button" id="addrow" class="btn btn-primary">Add Row</button>
                 <table class="table table-responsive table-bordered bg-white table-hover">
                     <thead>
                         <th>Firstname</th>
@@ -27,25 +27,29 @@
                     </thead>
                     <tbody>
                         <?php
-
                         for ($i = 0; $i < 5; $i++) {
                             echo '
-                                <tr id="row" ' . $i . '>
+                                <tr id="row-' . $i . '">
                                     <td contenteditable class="editable-cell fname" name="fname" id="fname-' . $i . '"></td>
                                     <td contenteditable class="editable-cell lname" name="lname" id="lname-' . $i . '"></td>
+                                    <td>
+                                    <button class="edit btn-secondary" data-row="row-' . $i . '">Edit</button>
+                                    <button class="delete btn-primary" data-row="row-' . $i . '">Delete</button>
+                                    <button class="remove btn-danger" data-row="row-' . $i . '">Remove</button>
+                                    </td>
+
                                 </tr>
                             ';
                         }
-
                         ?>
                     </tbody>
                 </table>
                 <p class="text-secondary"> <span id="num_row">5</span> / <span>20 rows</span> </p>
             </div>
+            <button type="submit" class="p-2 w-15 border-0 bg-success text-light" id="save" name="save">Save</button>
+            <button class="p-2 w-15 text-light bg-danger mb-3" id="clear">Clear</button>
         </form>
-        <a href="" class="p-2 w-15 border-0 bg-success text-light" id="generate" name="generate">Generate</a>
-        <a href="" class="p-2 w-15 mt-5 draft bg-primary text-light">Save as draft</a>
-        <a href="" class="p-2 w-15 text-light bg-danger mb-3 p-2 w-25" id="clear">Clear</a>
+
     </div>
 
     <!-- jQuery library -->
@@ -60,58 +64,80 @@
 
 <script>
     $(document).ready(function() {
-        
-        //Clear editable cells
+
+        // Clear editable cells
         $('#clear').on('click', function(e) {
+            e.preventDefault();
             $('.editable-cell').text('');
         });
 
-
-        //init for add rows
+        // Initialize num_row
         var num_row = 5;
         $('#num_row').text(num_row);
 
-        //Add rows
-        $('#addrow').on('click', function () {
+        // Add row functionality
+        $('#addrow').on('click', function(e) {
+            e.preventDefault();
 
-            num_row = num_row += 1;
+            if (num_row < 20) {
+                num_row++; // Increment num_row
+                var rowId = 'row-' + num_row;
 
-            var html = `<tr class="row_add" id="row${num_row}" ${num_row}></tr>`;
+                var html = `
+                    <tr id="${rowId}">
+                        <td contenteditable class="editable-cell fname" name="fname" id="fname-${num_row}"></td>
+                        <td contenteditable class="editable-cell lname" name="lname" id="lname-${num_row}"></td>
+                        <td>
+                        <button class="edit btn-secondary" data-row="${rowId}">Edit</button>
+                        <button class="delete btn-primary" data-row="${rowId}">Delete</button>
+                        <button class="remove btn-danger" data-row="${rowId}">Remove</button>
+                        </td>
+                    </tr>
+                `;
 
-            html += `
-                <td contenteditable class="editable-cell fname" name="fname" id="fname-${num_row - 1}"></td>
-                <td contenteditable class="editable-cell lname" name="lname" id="lname-${num_row - 1}"></td>
-                <td><button class="remove btn-danger" id="remove" data-row="row${num_row}">remove</button></td>
-            `;
-
-            html += '</tr>';
-
-            $('table tbody').append(html);
-            $('#num_row').text(num_row);
-
-            if (num_row == 20) {
-                $(this).css("background-color", "red");
-                $(this).attr('disabled', true);
-            } else {
-                $(this).attr('disabled', false);
+                $('table tbody').append(html);
                 $('#num_row').text(num_row);
-                $(this).css("background-color", "#5eb548");
+
+                if (num_row === 20) {
+                    $(this).prop('disabled', true).css("background-color", "red");
+                } else {
+                    $(this).prop('disabled', false).css("background-color", "#5eb548");
+                }
             }
         });
 
-        //Remove rows
-        $(document).on('click', '.remove', function () {
-            var delete_row = $(this).data('row');
-            $('#' + delete_row).remove();
-            num_row = num_row -= 1;
+        // Remove row functionality
+        $(document).on('click', '.remove', function() {
+            var rowId = $(this).data('row');
+            $('#' + rowId).remove();
+            num_row--; // Decrement num_row
             $('#num_row').text(num_row);
 
             if (num_row < 20) {
-                $()
+                $('#addrow').prop('disabled', false).css("background-color", "#5eb548");
             }
         });
 
+        //Save data
+        $('#save').on('click', function(e) {
+            e.preventDefault();
 
+            var fname = $('#fname').val();
+            var lname = $('#lname').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '',
+                data: {fname: fname, lname: lname},
+                success: function(r) {
+                    if (r > 0) {
+                        alert('Success');
+                    } else {
+                        alert('failed');
+                    }
+                }
+            });
+        });
 
     });
 </script>
